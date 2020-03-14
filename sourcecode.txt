@@ -1,0 +1,1603 @@
+///////////this code is for use with codewarrior cmu graphics stationery.  I don't care if you use this code without telling me as I'm not using its a totally unoriginal game anyway.  my email is: themattgreen@hotmail.com
+#include <math.h>
+#include <fstream.h>
+#include <iostream.h>
+#include "CMUgraphics.h"
+#include "auxil.h"
+
+// global window object, 700x400 at (5,5)
+window myWindow(590, 550, 10, 10);
+void die();
+int PacmanRightopen(int x1, int y1, int x2, int y2);
+bool dies;
+float score;
+float highscore;
+float eattime;
+float eatcount;
+int lives;
+int dotcount;
+int homex;
+int homey;
+int movecount;
+int ghostcount1;
+int pacmanx = 360;
+int pacmany = 30;
+int mazex=0;
+int mazey=0;
+int maze[17][20];
+void initialize();
+bool Left; 
+bool Right=true;
+class ghost
+{
+public:
+bool edible, eyes, move;
+int ghostx;
+int ghosty;
+bool ghostup, ghostdown, ghostLeft, ghostRight;
+
+
+void DrawghostRight()
+{
+int ghostx1=ghostx+30;
+int ghosty1=ghosty+30;
+
+myWindow.DrawRectangle(ghostx, ghosty, ghostx1, ghosty1);
+myWindow.SetBrush(BLACK);
+myWindow.SetPen(BLACK);
+myWindow.DrawRectangle(ghostx+5,ghosty1, ghostx+10,ghosty1-5);
+myWindow.DrawRectangle(ghostx+15, ghosty1, ghostx+20,ghosty1-5);
+myWindow.DrawRectangle(ghostx+25,ghosty1,ghostx+30,ghosty1-5);
+myWindow.SetPen(WHITE);
+myWindow.SetBrush(WHITE);
+myWindow.DrawRectangle(ghostx+4,ghosty+7,ghostx+13,ghosty+15);
+myWindow.DrawRectangle(ghostx1-4,ghosty+7,ghostx1-13,ghosty+15);
+myWindow.SetBrush(BLACK);
+myWindow.SetPen(BLACK);
+myWindow.DrawRectangle(ghostx+4,ghosty+10,ghostx+8,ghosty+15);
+myWindow.DrawRectangle(ghostx1-13, ghosty+10,ghostx1-8,ghosty+15);
+}
+
+
+void DrawghostLeft()
+{
+int ghostx1=ghostx+30;
+int ghosty1=ghosty+30;
+
+myWindow.DrawRectangle(ghostx, ghosty, ghostx1, ghosty1);
+myWindow.SetBrush(BLACK);
+myWindow.SetPen(BLACK);
+myWindow.DrawRectangle(ghostx,ghosty1, ghostx+5,ghosty1-5);
+myWindow.DrawRectangle(ghostx+10, ghosty1, ghostx+15,ghosty1-5);
+myWindow.DrawRectangle(ghostx+20,ghosty1,ghostx+25,ghosty1-5);
+myWindow.SetPen(WHITE);
+myWindow.SetBrush(WHITE);
+myWindow.DrawRectangle(ghostx+4,ghosty+7,ghostx+13,ghosty+15);
+myWindow.DrawRectangle(ghostx1-4,ghosty+7,ghostx1-13,ghosty+15);
+myWindow.SetBrush(BLACK);
+myWindow.SetPen(BLACK);
+myWindow.DrawRectangle(ghostx+7,ghosty+10,ghostx+13,ghosty+15);
+myWindow.DrawRectangle(ghostx1-4, ghosty+10,ghostx1-10,ghosty+15);
+
+}
+void drawghosteyes()
+{
+int ghostx1 = ghostx + 30;
+int ghosty1 = ghosty + 30;
+myWindow.SetPen(WHITE);
+myWindow.SetBrush(WHITE);
+myWindow.DrawRectangle(ghostx+4,ghosty+7,ghostx+13,ghosty+15);
+myWindow.DrawRectangle(ghostx1-4,ghosty+7,ghostx1-13,ghosty+15);
+myWindow.SetBrush(BLACK);
+myWindow.SetPen(BLACK);
+myWindow.DrawRectangle(ghostx+7,ghosty+10,ghostx+13,ghosty+15);
+myWindow.DrawRectangle(ghostx1-4, ghosty+10,ghostx1-10,ghosty+15);
+}
+
+void ghostcollideup(int l, int i)
+{
+if (move == true)
+{	
+	if (mazex == ghostx)
+	{
+		if (mazey+30 > ghosty && mazey < ghosty)
+			{
+				if (maze[l][i]==1)
+				{
+					ghostup = false;
+					ghosty++;
+				}
+			}
+		}
+}
+}
+void ghostcollideLeft(int l, int i)
+{
+if (move == true)
+{
+	if (mazey == ghosty)
+		{
+		if (mazex+30 < ghostx+30 && mazex+30 > ghostx)
+			{
+			if (maze[l][i]==1)
+				{
+				ghostLeft = false;
+				ghostx++;
+				}
+			}
+		}
+}
+}
+
+void ghostcollideRight(int l, int i)
+{
+if (move == true)
+{
+	if (mazey == ghosty)
+		{
+		if (mazex > ghostx && mazex < ghostx+30)
+			{
+			if (maze[l][i]==1)
+				{
+					ghostRight = false;
+					ghostx--;
+				}
+			}
+		
+		}
+		
+}
+}
+void ghostcollidedown(int l, int i)
+{
+if (move == true)
+{
+	if (mazex == ghostx)
+	{
+		if (mazey < ghosty + 30 && mazey > ghosty)
+			{
+				if (maze[l][i]==1)
+					{
+					ghostdown = false;
+					ghosty--;
+					}
+			}
+			
+		}
+}
+}
+
+
+
+
+
+void ghostcollideup()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+if (move == true)
+{
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (ghostx == mazex && ghosty >= mazey + 30 && ghosty < mazey+60)
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						ghostRight=false; ghostLeft=false; ghostdown = false; ghostup = true;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+		
+	}
+}
+}
+
+void ghostcollidedown()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+if (move == true)
+{
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (ghostx == mazex && ghosty + 30 <= mazey && ghosty + 30> mazey - 30)
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						ghostRight=false; ghostLeft=false; ghostdown = true; ghostup = false;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+	}	
+	}
+}
+
+void ghostcollideLeft()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+if (move == true)
+{
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (ghosty == mazey && ghostx >= mazex + 30 && ghostx < mazex + 60 )
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						ghostRight=false; ghostLeft=true; ghostdown = false; ghostup = false;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+	}	
+	}
+}
+
+void ghostcollideRight()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+if (move == true)
+{
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (ghosty == mazey && ghostx+30 <= mazex && ghostx+30 > mazex-30)
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						ghostRight=true; ghostLeft=false; ghostdown = false; ghostup = false;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+	}		
+	}
+}
+
+
+void Ghostaiescape()
+{
+
+if (eyes == false)
+{
+if (ghosty == pacmany)
+	{
+	if (ghostx < pacmanx)
+		{
+		ghostcollideLeft();
+		ghostcollidedown();
+		if (ghostdown == false) ghostcollideup();
+		}
+		
+		if (ghostx > pacmanx)
+		{
+		ghostcollideRight();
+		ghostcollideup();
+		if (ghostup == false) ghostcollidedown();
+		
+		}
+	}
+if (ghostx == pacmanx)
+	{
+		if (ghosty < pacmany)
+		{
+		ghostcollideup();
+		ghostcollideLeft();
+		if (ghostLeft == false)ghostcollideRight();
+		}	
+		if (ghosty > pacmany)
+		{
+		ghostcollidedown();
+		ghostcollideRight();
+		if (ghostRight == false)ghostcollideLeft();
+		}
+	
+	
+	}
+	if (ghostLeft == false && ghostRight == false && ghostup == false && ghostdown == false)
+	{
+	if (ghostx != pacmanx && ghosty != pacmany)
+	{
+		ghostcollideLeft();
+		if (ghostLeft == true) 
+		{
+		goto next;
+		}	
+		
+		ghostcollideup();
+		if (ghostup == true) 
+		{
+		goto next;
+		}
+		ghostcollideRight();
+		if (ghostRight == true) 
+		{
+		goto next;
+		}
+
+		ghostcollidedown();
+	}
+	}
+	}
+		next:
+		
+		
+	if (eyes==true)
+	{
+	if (ghostx<homex)
+	{
+	ghostcollideRight();
+	}
+	if (ghostx>homex)
+	{
+	ghostcollideLeft();
+	}
+	if (ghosty<homey)
+	{
+	ghostcollidedown();
+	}
+	if (ghosty>homey)
+	{
+	ghostcollideup();
+	}
+	}
+}
+
+void Ghostaichase()
+{
+
+	if (ghostx>pacmanx)
+	{
+	ghostcollideLeft();
+	}
+	if (ghosty<pacmany)
+	{
+	ghostcollidedown();
+	}
+	if (ghosty>pacmany)
+	{
+	ghostcollideup();
+	}
+	if (ghostx<pacmanx)
+	{
+	ghostcollideRight();
+	}
+}
+
+
+bool ghostpaccollide()
+{
+	if (ghostx<pacmanx+30 && ghostx+30 > pacmanx && ghosty<pacmany + 30 and ghosty+30>pacmany)
+	return true;
+	else
+	return false;
+}
+};
+int ghostcount = 10;
+ghost ghost[10];
+
+void ghostcollideLeft1(int l,int i);
+void ghostcollideRight1(int l,int i);
+void ghostcollideup1(int l,int i);
+void ghostcollidedown1(int l,int i);
+char c;
+char d;
+void mazedraw();
+void drawtile(int x, int y);
+void drawdot(int x, int y);
+void pacmancollideRight(int l, int i);
+void pacmancollideLeft(int l, int i);
+void pacmancollideup(int l, int i);
+void pacmancollidedown(int l, int i);
+void pacmancollideLeft();
+void pacmancollidedown();
+void pacmancollideup();
+void pacmancollideRight();
+
+bool pacmanRight;
+bool pacmanLeft;
+bool pacmanup;
+bool pacmandown;
+bool open;
+bool closed = true;
+int animcount = 11;
+float runn = 0;
+void Draw();
+
+void Pacman(int x1, int y1);
+
+int PacmanRightopen(int x1, int y1, int x2, int y2);
+int PacmanRightclosed(int x1, int y1, int x2, int y2);
+int PacmanLeftopen(int x1, int y1, int x2, int y2);
+int PacmanLeftclosed(int x1, int y1, int x2, int y2);
+int Pacmanupopen(int x1, int y1, int x2, int y2);
+int Pacmanupclosed(int x1, int y1, int x2, int y2);
+int Pacmandownopen(int x1, int y1, int x2, int y2);
+int Pacmandownclosed(int x1, int y1, int x2, int y2);
+int Draw(int x, int y);
+void control();
+void move();
+
+void Ghostai()
+{
+int b;
+for (b = 0; b < ghostcount; b++)
+{
+	if (ghost[b].ghostx==homex && ghost[b].ghosty==homey)
+	{
+	ghost[b].edible=false;
+	ghost[b].eyes = false;
+	}
+	if (ghost[b].edible == false)
+	{
+		ghost[b].Ghostaichase();
+	}
+	if (ghost[b].edible == true)
+	{
+		ghost[b].Ghostaiescape();
+	}
+	
+
+}
+}
+
+void ghostpaccollide()
+{
+bool collide;
+int b;
+for (b = 0; b < ghostcount; b++)
+{
+	if (ghost[b].eyes == false && eattime >eatcount)ghost[b].edible = false;
+collide = ghost[b].ghostpaccollide();
+	if (collide == true)
+	{
+		if (ghost[b].edible == true)
+		{
+			if (ghost[b].eyes== false)
+			{
+				ghost[b].eyes = true;
+				score = score + 100;
+			}
+		}
+		if (ghost[b].edible == false)
+		{
+		die();
+		
+		
+		}
+	}
+}
+}
+
+void  initialize()
+{
+d = 'z';
+pacmanLeft = false;
+pacmanRight = false;
+pacmandown = false;
+pacmanup = false;
+dotcount = 0;
+movecount = 0;
+ghost[0].move = false;
+ghost[1].move = false;
+ghost[2].move = false;
+ghost[3].move = false;
+ghost[4].move = false;
+int b;
+				for (b = 0; b < ghostcount; b++)
+				{
+				ghost[b].ghostLeft=false;ghost[b].ghostRight=false;ghost[b].ghostup=false;ghost[b].ghostdown=false;
+				}
+mazex=0;
+mazey=0;
+int i=0;
+int l=0;
+for (l=0; l<17; l++)
+	{
+	mazex=0;
+	
+	for (i=0; i<20; i++)
+		{
+		
+			if (maze[l][i] == 4)
+			{
+				int b;
+				for (b = 0; b < ghostcount; b++)
+				{
+				ghost[b].ghostx = mazex;
+				ghost[b].ghosty = mazey;
+				}
+			
+			}
+			if (maze[l][i]==2)
+			{
+			dotcount++;
+			}
+			if (maze[l][i]==5)
+			{
+			pacmanx = mazex;
+			pacmany = mazey;
+			}
+		mazex=mazex+30;
+		}
+		mazey=mazey+30;
+	}
+}
+void moveyet()
+{
+
+if (movecount > 200)ghost[0].move = true;
+
+if (movecount > 500)ghost[1].move = true;
+
+if (movecount > 800)ghost[2].move = true;
+if (movecount > 1100)ghost[3].move = true;
+if (movecount > 1400)ghost[4].move = true;
+if (movecount > 1700)ghost[5].move = true;
+if (movecount > 2000)ghost[6].move = true;
+if (movecount > 2300)ghost[7].move = true;
+if (movecount > 2600)ghost[8].move = true;
+if (movecount > 2900)ghost[9].move = true;
+if (movecount < 2901)movecount++;
+}
+
+void level1()
+{
+int maze1[17][20]={
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,3,2,2,2,2,2,2,2,5,2,2,2,2,2,2,2,3,1,1},
+{1,2,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,2,1,1},
+{1,2,1,2,2,1,2,1,1,2,1,1,2,1,2,2,1,2,1,1},
+{1,2,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,2,1,1},
+{1,2,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,2,1,1},
+{1,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,1},
+{1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1},
+{1,2,2,2,2,2,2,2,2,4,2,2,2,2,2,2,2,2,1,1},
+{1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1},
+{1,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1,1},
+{1,2,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,2,1,1},
+{1,2,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,2,1,1},
+{1,2,1,2,2,1,2,1,1,2,1,1,2,1,2,2,1,2,1,1},
+{1,2,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,2,1,1},
+{1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1,1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
+int i=0;
+int l=0;
+for (l=0; l<17; l++)
+	{
+	
+	
+	for (i=0; i<20; i++)
+		{
+		maze[l][i]=maze1[l][i];
+		}
+	}
+}
+
+
+void level2()
+{
+int maze1[17][20]={
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1},
+{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+{1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1},
+{1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,5,1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
+int i=0;
+int l=0;
+for (l=0; l<17; l++)
+	{
+	
+	
+	for (i=0; i<20; i++)
+		{
+		maze[l][i]=maze1[l][i];
+		}
+	}
+}
+
+
+void level3()
+{
+int maze1[17][20]={
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,2,2,2,2,2,2,2,2,4,2,2,2,2,2,2,2,2,2,1},
+{1,2,1,2,1,1,1,1,1,2,1,1,1,1,1,2,1,2,1,1},
+{1,2,1,2,1,2,2,2,2,2,2,2,2,2,1,2,1,2,2,1},
+{1,2,1,2,1,2,1,1,1,2,1,1,1,2,1,2,1,2,1,1},
+{1,2,1,2,1,2,1,2,2,2,2,2,1,2,1,2,1,2,2,1},
+{1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,2,1},
+{1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1},
+{1,2,2,2,2,2,2,2,2,5,2,2,2,2,2,2,2,2,2,1},
+{1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1},
+{1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
+{1,1,3,1,2,1,2,1,1,2,1,2,1,2,1,2,1,3,1,1},
+{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
+int i=0;
+int l=0;
+for (l=0; l<17; l++)
+	{
+	
+	
+	for (i=0; i<20; i++)
+		{
+		maze[l][i]=maze1[l][i];
+		}
+	}
+}
+
+void level()
+{
+	runn=0;
+	if (lives > -1)
+	{
+	while(runn<500)
+	{
+	Draw();
+	move();
+	control();
+	Ghostai();
+	ghostpaccollide();
+	moveyet();
+	if(dotcount==0)
+	{
+	runn = 500;
+	}
+	if (lives<0)
+	{
+	runn = 500;
+	}
+	if (eattime < eatcount+1)eattime++;
+	}
+	}
+}
+int main()
+{
+ghostcount = 1;
+
+
+ifstream access;  ///////creates a read file access object
+access.open("c:\windows\yelloweater\highscore.txt");  /////////opens the text file
+access >> highscore;////reads the text object and assigns the value to the variable a
+access.close();
+
+
+myWindow.SetBuffering(true);
+annn:
+runn = 1;
+while (runn<500)
+{
+score = 0;
+lives = 3;
+	myWindow.SetBrush(BLACK);
+	myWindow.DrawRectangle(0,0,700,700);
+	myWindow.SetPen(WHITE);
+	myWindow.SetFont(72, PLAIN, MODERN);
+	myWindow.DrawString(20,20,"Yellow Eater");
+	myWindow.SetFont(20, PLAIN, MODERN);
+	myWindow.DrawString(10,200,"Press any key to play, press 'q' to quit");
+	myWindow.DrawString(1, 400,"By Matthew Green, themattgreen@hotmail.com");
+	pacmanx = 300;
+	pacmany = 300;
+	PacmanRightopen(pacmanx, pacmany, pacmanx+30,pacmany+30);
+	myWindow.UpdateBuffer();
+	char v;
+	Pause(1000);
+	myWindow.FlushKeyQueue();
+	myWindow.WaitKeyPress(v);
+	if (v == 'q'){runn = 600;lives=-1;}
+	/////////level1
+	
+	eatcount = 1000;
+	ghostcount = 1;
+	while (lives > -1)
+	{
+	level1();
+	initialize();
+	
+	level();
+	
+	score = score + 100;
+	////level2
+	level2();
+	initialize();
+	level();
+	score = score + 100;
+	if (ghostcount<10)ghostcount++;
+	if (ghostcount==10 && eatcount > 10)eatcount = eatcount-100;
+	///level3
+	level3();
+	initialize();
+	level();
+	score = score + 100;
+	
+	eatcount = eatcount-50;
+	}
+	if (score > highscore) highscore = score;
+	if (score > 0)
+	{
+	
+	myWindow.SetBrush(BLACK);
+	myWindow.DrawRectangle(0,0, 800, 800);
+	myWindow.SetPen(WHITE);
+	myWindow.SetFont(72, PLAIN, MODERN);
+	myWindow.DrawString(20,20,"Game Over");
+	myWindow.SetFont(24, PLAIN, MODERN);
+	myWindow.DrawString(20,100, "High Score:");
+	myWindow.DrawInteger(200, 100, highscore);
+	myWindow.DrawString(20,200, "Your Score:");
+	myWindow.DrawInteger(200, 200, score);
+	myWindow.UpdateBuffer();
+	Pause(1000);
+	myWindow.FlushKeyQueue;
+	myWindow.WaitKeyPress(v);
+	if (v != 'q')goto annn;
+	
+	}
+	}
+	
+	ofstream uccess;  /////write object
+	uccess.open("c:\windows\yelloweater\highscore.txt");
+
+	uccess << highscore; //enters the value of a into the text object
+	uccess.close();
+	
+	myWindow.SetBrush(BLACK);
+	myWindow.DrawRectangle(0,0, 800, 800);
+	myWindow.SetPen(WHITE);
+	myWindow.SetFont(20, PLAIN, MODERN);
+	myWindow.DrawString(20,20,"Click window to exit");
+	myWindow.UpdateBuffer();
+ 	cout << "\n press return to exit";
+ 	return 0;
+}
+
+void drawtile(int x, int y)
+{
+	int x1=x+30;
+	int y1=y+30;
+	myWindow.SetPen(BLUE);
+	myWindow.SetBrush(BLUE);
+	myWindow.DrawRectangle(x,y,x1,y1);
+}
+
+void drawpowerpill(int x, int y)
+{
+int x1 = x + 15;
+int y1 = y + 15;
+myWindow.SetPen(WHITE);
+myWindow.SetBrush(WHITE);
+myWindow.DrawCircle(x1, y1, 5);
+}
+
+void drawdot(int x, int y)
+{
+int x1= x + 15;
+int y1= y + 15;
+myWindow.SetPen(WHITE);
+myWindow.SetBrush(WHITE);
+myWindow.DrawCircle(x1, y1, 2);
+}
+
+void ghostcollideRight1(int l, int i)
+{
+int b;
+	for (b = 0; b < ghostcount; b++)
+	{
+		ghost[b].ghostcollideRight(l, i);
+	}
+}
+
+void ghostcollideLeft1(int l, int i)
+{
+int b;
+	for (b = 0; b < ghostcount; b++)
+	{
+		ghost[b].ghostcollideLeft(l, i);
+	}
+}
+void ghostcollideup1(int l, int i)
+{
+int b;
+	for (b = 0; b < ghostcount; b++)
+	{
+		ghost[b].ghostcollideup(l, i);
+	}
+}
+
+void ghostcollidedown1(int l,int i)
+{
+int b;
+	for (b = 0; b < ghostcount; b++)
+	{
+		ghost[b].ghostcollidedown(l, i);
+	}
+}
+
+
+void mazedraw()
+{
+mazex=0;
+mazey=0;
+int i=0;
+int l=0;
+for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (maze[l][i] == 1)
+				{
+					drawtile(mazex, mazey);
+					pacmancollideRight(l, i);
+					pacmancollideLeft(l, i);
+					
+					pacmancollideup(l,i);
+					pacmancollidedown(l,i);
+					ghostcollideRight1(l,i);
+					ghostcollideLeft1(l,i);
+					ghostcollidedown1(l,i);
+					ghostcollideup1(l,i);
+				}
+			
+			if (pacmanx==mazex-1 || pacmanx==mazex+1)pacmanx=mazex;
+			if (pacmany==mazey-1 || pacmany==mazey+1)pacmany=mazey;
+				
+			if (maze[l][i]==2)
+			{
+				drawdot(mazex, mazey);
+				if (pacmanx == mazex && pacmany == mazey)
+				{
+				maze[l][i] = 0;
+				dotcount--;
+				score = score + 10;
+				}
+			}
+			if (maze[l][i]==3)
+			{
+				drawpowerpill(mazex, mazey);
+				if (pacmanx == mazex && pacmany == mazey)
+				{
+				maze[l][i] = 0;
+				int b;
+				eattime = 0;
+				score = score + 50;
+				for (b = 0; b < ghostcount; b++)
+				{
+					ghost[b].edible = true;
+				}
+				}
+			}
+			if (maze[l][i]==4)
+			{
+				homex=mazex;
+				homey=mazey;
+			}
+			
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+		
+	}
+}
+
+void pacmancollideRight(int l, int i)
+{
+	if (mazey == pacmany)
+		{
+		if (mazex > pacmanx && mazex < pacmanx+30)
+			{
+			if (maze[l][i]==1)
+				{
+					
+					pacmanRight = false;
+					pacmanx--;
+					
+				}
+			}
+		
+		}
+		
+}
+
+void pacmancollidedown(int l, int i)
+{
+	if (mazex == pacmanx)
+	{
+		if (mazey > pacmany && mazey < pacmany + 30)
+			{
+				if (maze[l][i]==1)
+					{
+					pacmandown = false;
+					pacmany--;
+					}
+			}
+			
+		}
+}
+
+void pacmancollideup()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (pacmanx == mazex && pacmany >= mazey + 30 && pacmany < mazey+60)
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						pacmanRight=false; pacmanLeft=false; pacmandown = false; pacmanup = true;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+		
+	}
+}
+
+void pacmancollidedown()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (pacmanx == mazex && pacmany + 30 == mazey && pacmany + 30> mazey - 30)
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						pacmanRight=false; pacmanLeft=false; pacmandown = true; pacmanup = false;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+		
+	}
+}
+
+void pacmancollideLeft()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (pacmany == mazey && pacmanx >= mazex + 30 && pacmanx < mazex + 60 )
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						pacmanRight=false; pacmanLeft=true; pacmandown = false; pacmanup = false;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+		
+	}
+}
+
+void pacmancollideRight()
+{
+int i=0;
+int l=0;
+mazey=0;
+mazex=0;
+	for (l=0; l<17; l++)
+	{
+	mazex=0;
+	for (i=0; i<20; i++)
+		{
+			if (pacmany == mazey && pacmanx+30 <= mazex && pacmanx+30 > mazex-30)
+				{
+				
+					if (maze[l][i] != 1)
+					{
+						pacmanRight=true; pacmanLeft=false; pacmandown = false; pacmanup = false;
+					}
+				}
+							
+			mazex = mazex+30;
+			}
+		mazey = mazey+30;
+		
+		
+	}
+}
+void pacmancollideup(int l, int i)
+{
+	if (mazex == pacmanx)
+	{
+		if (mazey+30 > pacmany && mazey < pacmany)
+			{
+				if (maze[l][i]==1)
+				{
+					pacmanup = false;
+					pacmany++;
+				}
+			}
+		}
+}
+void pacmancollideLeft(int l, int i)
+{
+	if (mazey == pacmany)
+		{
+		if (mazex+30 < pacmanx+30 && mazex+30 > pacmanx)
+			{
+			if (maze[l][i]==1)
+				{
+				pacmanLeft = false;
+				pacmanx++;
+				}
+			}
+		}
+}
+void move()
+{
+if(pacmanRight == true)pacmanx=pacmanx+2;
+if(pacmanLeft == true)pacmanx=pacmanx-2;
+if (pacmanup == true)pacmany=pacmany-2;
+if (pacmandown == true)pacmany=pacmany+2;
+	int b;
+for (b = 0; b < ghostcount; b++)
+	{
+		if (ghost[b].ghostRight == true)ghost[b].ghostx=ghost[b].ghostx+1;
+		if (ghost[b].ghostLeft == true)ghost[b].ghostx=ghost[b].ghostx-1;
+		if (ghost[b].ghostup == true) ghost[b].ghosty=ghost[b].ghosty-1;
+		if (ghost[b].ghostdown == true) ghost[b].ghosty=ghost[b].ghosty+1;
+	}
+
+
+
+}
+void Pacman(int x1, int y1)//////////////draws Pacman
+{
+
+x1;
+y1;
+int x2;
+int y2;
+x2=x1+30;
+y2=y1+30;
+animcount++;
+////////////moving to the Right animation
+if (pacmanRight == true)
+{
+	if (animcount > 10)
+		{
+		if (open == true)
+			{
+			open = false;
+			closed = true;
+			animcount = 0;
+			goto er; 
+			}
+		if (closed == true)
+			{
+			open = true;
+			closed = false;
+			animcount = 0;
+			goto er;
+			}
+	
+		}
+
+er:
+	if (open == true)
+		{
+		PacmanRightopen(x1, y1, x2, y2);
+		}
+	if (closed == true)
+		{
+		PacmanRightclosed(x1, y1, x2, y2);
+		}
+}
+
+/////////moving to the Left animation
+if (pacmanLeft == true)
+{
+	if (animcount > 10)
+		{
+		if (open == true)
+			{
+			open = false;
+			closed = true;
+			animcount = 0;
+			goto em; 
+			}
+		if (closed == true)
+			{
+			open = true;
+			closed = false;
+			animcount = 0;
+			goto em;
+			}
+	
+		}
+
+em:
+	if (open == true)
+		{
+		PacmanLeftopen(x1, y1, x2, y2);
+		}
+	if (closed == true)
+		{
+		PacmanLeftclosed(x1, y1, x2, y2);
+		}
+}
+
+///////moving down animation
+
+if (pacmandown == true)
+{
+	if (animcount > 10)
+		{
+		if (open == true)
+			{
+			open = false;
+			closed = true;
+			animcount = 0;
+			goto eb; 
+			}
+		if (closed == true)
+			{
+			open = true;
+			closed = false;
+			animcount = 0;
+			goto eb;
+			}
+	
+		}
+
+eb:
+	if (open == true)
+		{
+		Pacmandownopen(x1, y1, x2, y2);
+		}
+	if (closed == true)
+		{
+		Pacmandownclosed(x1, y1, x2, y2);
+		}
+}
+
+///////pacman up animation
+if (pacmanup == true)
+{
+	if (animcount > 10)
+		{
+			if (open == true)
+				{
+					open = false;
+					closed = true;
+					animcount = 0;
+					goto ec; 
+				}
+			if (closed == true)
+				{
+					open = true;
+					closed = false;
+					animcount = 0;
+					goto ec;
+				}
+		}
+		
+
+	ec:
+	if (open == true)
+		{
+			Pacmanupopen(x1, y1, x2, y2);
+		}
+	if (closed == true)
+		{
+			Pacmanupclosed(x1, y1, x2, y2);
+		}
+}
+
+if (pacmanRight==false && pacmanLeft==false && pacmanup==false && pacmandown==false)
+{
+PacmanRightclosed(x1, y1, x2, y2);
+}
+}
+
+void control()
+{
+
+	
+	myWindow.GetKeyPress(c);
+	if (c == 'y' || c == 'b' || c == 'h' || c == 'g' || c == 'q')
+	{
+	 d = c;
+	}
+	switch (d)
+	{
+	case 'y':  pacmancollideup(); break;
+	case 'b':  pacmancollidedown(); break;
+	case 'h':  pacmancollideRight(); break;
+	case 'g':  pacmancollideLeft(); break;
+	case 'q':  runn=700;lives=-1; break;
+	}
+	myWindow.FlushKeyQueue();
+
+}
+
+int PacmanRightopen(int x1, int y1, int x2, int y2)
+{
+
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x1, y1, x2, y2, 20,340 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x1+16, y1+10);
+return 0;
+}
+
+int PacmanLeftopen(int x1, int y1, int x2, int y2)
+{
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x2, y2, x1, y1, 20,340 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x2-16, y1+10);
+return 0;
+}
+
+
+int Pacmandownopen(int x1, int y1, int x2, int y2)
+{
+
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x2, y2, x1, y1, 110,70 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x1+10, y2-16);
+return 0;
+}
+
+int Pacmanupopen(int x1, int y1, int x2, int y2)
+{
+
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x2, y2, x1, y1, 290,250 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x1+10, y1+16);
+return 0;
+}
+
+int PacmanRightclosed(int x1, int y1, int x2, int y2)
+{
+////////draw pacman moving Right closed mouth
+
+
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x1, y1, x2, y2, 360 ,1 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x1+16, y1+10);
+//////
+return 0;
+}
+
+int PacmanLeftclosed(int x1, int y1, int x2, int y2)
+{
+
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x1, y1, x2, y2, 360,1 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x2-16, y1+10);
+return 0;
+}
+
+
+int Pacmanupclosed(int x1, int y1, int x2, int y2)
+{
+
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x1, y1, x2, y2, 360,1 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x1+10, y1+16);
+return 0;
+}
+
+
+int Pacmandownclosed(int x1, int y1, int x2, int y2)
+{
+
+myWindow.SetBrush(YELLOW);
+myWindow.SetPen(YELLOW,1);
+myWindow.DrawArc(x1, y1, x2, y2, 360,1 , FILLED);
+myWindow.SetPen(BLACK);
+myWindow.DrawPixel(x1+10, y2-16);
+return 0;
+}
+
+void Drawghost()
+{
+int b;
+ghostcount1++;
+if (ghostcount1>20)
+{
+	if (Left == true)
+	{
+	Left = false; Right = true;
+	ghostcount1 = 0;
+	goto skip;
+	}
+	
+	if (Right == true)
+	{
+	Left = true; Right = false;
+	ghostcount1 = 0;
+	goto skip;
+	}
+}
+
+
+	
+skip:
+
+if (Right == true)
+{
+	for (b = 0; b < ghostcount; b++)
+	{
+	if (ghost[b].eyes == false)
+	{
+	
+	switch(b)
+	{
+	case 0: myWindow.SetPen(PINK); myWindow.SetBrush(PINK);break;
+	case 1: myWindow.SetPen(ORANGE); myWindow.SetBrush(ORANGE);break;
+	case 2: myWindow.SetPen(PURPLE); myWindow.SetBrush(PURPLE);break;
+	case 3: myWindow.SetPen(MAGENTA); myWindow.SetBrush(MAGENTA); break;
+	case 4: myWindow.SetPen(CYAN);myWindow.SetBrush(CYAN);break;
+	case 5: myWindow.SetPen(RED);myWindow.SetBrush(RED);break;
+	case 6: myWindow.SetPen(5.0,5.0,0);myWindow.SetBrush(5.0,5.0,0);break;
+	case 7: myWindow.SetPen(0.15,4.30,0.87);myWindow.SetBrush(0.15,5.30,0.87);break;
+	case 8: myWindow.SetPen(0,4.0,4.0);myWindow.SetBrush(0,5.0,5.0);break;
+	case 9: myWindow.SetPen(5.0,5.0,5.0);myWindow.SetBrush(5.0,5.0,5.0);break;
+	}
+	if(ghost[b].edible == true)
+	{
+	myWindow.SetPen(GREY); myWindow.SetBrush(GREY);
+	}
+		ghost[b].DrawghostRight();
+	}
+	else
+	{
+	ghost[b].drawghosteyes();
+	}
+	}
+}
+if (Left == true)
+{
+	for (b = 0; b < ghostcount; b++)
+	{
+	if (ghost[b].eyes == false)
+	{
+	switch(b)
+	{
+		case 0: myWindow.SetPen(PINK); myWindow.SetBrush(PINK);break;
+	case 1: myWindow.SetPen(ORANGE); myWindow.SetBrush(ORANGE);break;
+	case 2: myWindow.SetPen(PURPLE); myWindow.SetBrush(PURPLE);break;
+	case 3: myWindow.SetPen(MAGENTA); myWindow.SetBrush(MAGENTA); break;
+	case 4: myWindow.SetPen(CYAN);myWindow.SetBrush(CYAN);break;
+	case 5: myWindow.SetPen(RED);myWindow.SetBrush(RED);break;
+	case 6: myWindow.SetPen(5.0,5.0,0);myWindow.SetBrush(5.0,5.0,0);break;
+	case 7: myWindow.SetPen(0.15,4.30,0.87);myWindow.SetBrush(0.15,5.30,0.87);break;
+	case 8: myWindow.SetPen(0,4.0,4.0);myWindow.SetBrush(0,5.0,5.0);break;
+	case 9: myWindow.SetPen(5.0,5.0,5.0);myWindow.SetBrush(5.0,5.0,5.0);break;
+	}
+	if(ghost[b].edible == true)
+	{
+	myWindow.SetPen(GREY); myWindow.SetBrush(GREY);
+	}
+		ghost[b].DrawghostLeft();
+	}
+	else
+	ghost[b].drawghosteyes();
+	}
+
+}
+}
+
+void drawhome()
+{
+int homex1 = homex+30;
+int homey1 = homey+30;
+myWindow.SetPen(GREY);
+myWindow.SetBrush(GREY);
+myWindow.DrawRectangle(homex, homey, homex1, homey1);
+}
+void Draw()
+{  
+mazedraw();
+drawhome();
+Pacman(pacmanx, pacmany);
+
+		Drawghost();
+myWindow.SetPen(WHITE);	
+
+myWindow.SetFont(12, PLAIN, MODERN);
+myWindow.DrawString(2,2, "Lives");
+myWindow.DrawInteger(30,2,lives);
+myWindow.DrawString(100,2, "High Score");
+myWindow.DrawInteger(150,2, highscore);
+myWindow.DrawString(220,2, "Score");
+myWindow.DrawInteger(250,2, score);
+
+if (dies == true)
+{
+goto ret;
+}
+myWindow.UpdateBuffer();
+myWindow.SetBrush(BLACK);
+myWindow.DrawRectangle(900, 700, 0, 0);
+ret:
+int cd;
+
+
+}
+
+
+void die()
+{
+dies = true;
+int x2 = pacmanx + 30;
+int y2 = pacmany + 30;
+int a;
+int cg;
+cg = 0;
+while (cg<5)
+{
+	a=0;
+	while (a < 5)
+	{
+	pacmanLeft=false;
+	pacmanRight=false;
+	pacmanup=false;
+	pacmandown=false;
+		Draw();
+		myWindow.SetPen(BLACK);
+		myWindow.SetBrush(BLACK);
+		myWindow.DrawRectangle(pacmanx, pacmany, x2, y2);
+		PacmanRightopen(pacmanx, pacmany,x2,y2);
+		myWindow.UpdateBuffer();
+		
+	a++;
+	}
+	a = 0;
+	
+	
+		while (a < 5)
+	{
+	pacmanLeft=false;
+	pacmanRight=false;
+	pacmanup=false;
+	pacmandown=false;
+		Draw();
+		myWindow.SetPen(BLACK);
+		myWindow.SetBrush(BLACK);
+		myWindow.DrawRectangle(pacmanx, pacmany, x2, y2);
+		Pacmandownopen(pacmanx, pacmany,x2,y2);
+		myWindow.UpdateBuffer();
+	a++;
+	}
+	a = 0;
+		while (a < 5)
+	{
+	pacmanLeft=false;
+	pacmanRight=false;
+	pacmanup=false;
+	pacmandown=false;
+		Draw();
+		myWindow.SetPen(BLACK);
+		myWindow.SetBrush(BLACK);
+		myWindow.DrawRectangle(pacmanx, pacmany, x2, y2);
+		PacmanLeftopen(pacmanx, pacmany,x2,y2);
+		myWindow.UpdateBuffer();
+	a++;
+	}
+	a=0;	
+	while (a < 5)
+	{
+	pacmanLeft=false;
+	pacmanRight=false;
+	pacmanup=false;
+	pacmandown=false;
+		Draw();
+		myWindow.SetPen(BLACK);
+		myWindow.SetBrush(BLACK);
+		myWindow.DrawRectangle(pacmanx, pacmany, x2, y2);
+		Pacmanupopen(pacmanx, pacmany,x2,y2);
+		myWindow.UpdateBuffer();
+	a++;
+	}
+	cg++;
+	}
+	initialize();
+	lives--;
+	dies=false;
+}
